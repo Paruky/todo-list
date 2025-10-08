@@ -36,11 +36,12 @@
     }
 
     #textbox, #datebox {
-      padding: 3px;
-      margin-bottom: 5px;
+      padding: 0.7em;
+      padding-right: 8em;
+      margin-bottom: 7px;
     }
     #textbox {
-      padding-right: 4em;
+      padding-right: 12em;
     }
     .list { 
       list-style-type: none;
@@ -103,13 +104,13 @@
       border: rgb(11, 4, 84) 1px solid;
       color: #fff;
       border-radius: 6px;
-      padding: 0.8em 1.2em;
+      padding: 1.2em 1.6em;
       cursor: pointer;
     }
 
     /* ソートボタン */
     #sort {
-      padding: 0.6em 0.8em;
+      padding: 1em 1em;
       background-color: rgba(129, 212, 253, 0.4);
       border-radius: 6px;
       border: none;
@@ -124,7 +125,6 @@
 
     #sort i {
       color: #215bb3;
-      font-size: 1.2em;
     }
 
     #today {
@@ -132,7 +132,7 @@
       border: rgb(33, 33, 33) 1px solid;
       color: #fff;
       border-radius: 6px;
-      padding: 0.25em 0.5em;
+      padding: 0.6em 0.8em;
       cursor: pointer;
     }
   </style>
@@ -301,10 +301,10 @@
 <body>
   <div class="container">
       <div class="upper">
-        <h1>ToDoリスト レベル3</h1>
+        <h1>ToDoリスト</h1>
         <div class="btn-group">
           <button id="addbtn" onclick="add()">追加</button>
-          <button id="sort" onclick="sortByDeadline()"><i class="fa-solid fa-filter"></i></button>
+          <button id="sort" onclick="sortByDeadline()"><i class="fa-solid fa-arrow-down-1-9 fa-2x"></i></button>
         </div>
         <input type="text" id="textbox" placeholder="やること"><br>
         <input type="text" id="datebox" placeholder="期限の日付: mm/dd">
