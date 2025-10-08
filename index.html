@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>ToDoリスト</title>
+  <style>
+    body {
+      background-color: rgb(241, 246, 250);
+    }
+    button {
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .container {
+      max-width: 470px;
+      min-height: 98vh;
+      margin: 0 auto;
+      padding: 13px;
+      box-sizing: border-box;
+      background-color: rgb(208, 237, 255);
+      border-radius: 16px;
+      box-shadow:  
+        10px -2px 10px -6px rgba(65, 111, 168, 0.2), 
+        -10px -2px 10px -6px rgba(65, 111, 168, 0.2);
+    }
+
+    #textbox, #datebox {
+      padding: 3px;
+      margin-bottom: 5px;
+    }
+    #textbox {
+      padding-right: 4em;
+    }
+    .list { 
+      list-style-type: none;
+      padding-inline-start: 0px;
+    }
+    .content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px;
+      background-color: #afcdf9;
+      border-radius: 6px;
+      margin-bottom: 5px;
+      box-shadow: -0.5px -0.5px 5px 2px rgba(255, 255, 255, 0.3);
+    }
+
+    .left-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .date {
+      font-size: 0.8em;
+      color: #333;
+      margin-right: 1px;
+      margin-left: 1px;
+    }
+
+    .sortable-ghost {
+      opacity: 0.5;
+      background-color: #215bb3;
+      border-radius: 6px;
+    }
+
+    .delBtn {
+      background-color: rgb(248, 37, 37);
+      border: none;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.25em 1em;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+    }
+    .delBtn:hover {
+      background-color: rgb(200, 20, 20);
+    }
+
+    .upper {
+      position: relative;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;  /* ボタン間の余白 */
+      margin-bottom: 10px;
+    }
+
+    /* 追加ボタン */
+    #addbtn {
+      background-color: rgb(50, 32, 248);
+      border: rgb(11, 4, 84) 1px solid;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.8em 1.2em;
+      cursor: pointer;
+    }
+
+    /* ソートボタン */
+    #sort {
+      padding: 0.6em 0.8em;
+      background-color: rgba(129, 212, 253, 0.4);
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    #sort:hover {
+      background-color: rgba(129, 212, 253, 0.8);
+      transform: scale(1.05);
+    }
+
+    #sort i {
+      color: #215bb3;
+      font-size: 1.2em;
+    }
+
+    #today {
+      background-color: rgb(90, 90, 90);
+      border: rgb(33, 33, 33) 1px solid;
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.25em 0.5em;
+      cursor: pointer;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>
+    // 並べ替え関数
+  function sortByDeadline() {
+    let parent = document.getElementById("list");
+    let items = Array.from(parent.querySelectorAll("li"));
+
+    items.sort((a, b) => {
+      let aDeadline = a.dataset.deadline ? new Date(a.dataset.deadline) : null;
+      let bDeadline = b.dataset.deadline ? new Date(b.dataset.deadline) : null;
+
+      if (!aDeadline && !bDeadline) return 0;   // 両方無期限
+      if (!aDeadline) return 1;                 // aが無期限 → 後ろ
+      if (!bDeadline) return -1;                // bが無期限 → 後ろ
+
+      return aDeadline - bDeadline;             // 日付の昇順
+    });
+
+    items.forEach(item => parent.appendChild(item));
+  }
+
+  // 今日ボタン---------------------------------------
+  function today() {
+    let dateInput = document.getElementById("datebox");
+    let now = new Date();
+    let month = now.getMonth() + 1;
+    let day = now.getDate();
+    let formatted = month + "/" + day;
+    dateInput.value = formatted;
+  }
+  // 追加------------------------------
+  function add() {
+    let input = document.getElementById("textbox");
+    let dateInput = document.getElementById("datebox");
+    let parent = document.getElementById("list");
+
+    if (input.value != "") {
+      let li = document.createElement("li");
+      li.className = "content";
+
+      let leftGroup = document.createElement("div");
+      leftGroup.className = "left-group";
+
+      // 日付処理
+      let rawDate = dateInput.value.trim();
+      let displayDate = "";
+      let deadline = null;
+
+      if (rawDate) {
+        let parts = rawDate.split("/");
+        if (parts.length === 3) {
+          // 年あり
+          let year = parseInt(parts[0]);
+          let month = parseInt(parts[1]) - 1;
+          let day = parseInt(parts[2]);
+          deadline = new Date(year, month, day);
+          displayDate = String(year).slice(-2) + "/" + (month + 1) + "/" + day;
+        } else if (parts.length === 2) {
+          // 年なし → 今年と仮定
+          let now = new Date();
+          let year = now.getFullYear();
+          let month = parseInt(parts[0]) - 1;
+          let day = parseInt(parts[1]);
+          deadline = new Date(year, month, day);
+          displayDate = (month + 1) + "/" + day;
+        }
+      } else {
+        displayDate = "無期限";
+      }
+
+      // li に締切データを持たせる
+      if (deadline) {
+        li.dataset.deadline = deadline.toISOString();
+      }
+
+      // 日付表示
+      let dateSpan = document.createElement("span");
+      dateSpan.className = "date";
+      dateSpan.textContent = displayDate;
+      leftGroup.appendChild(dateSpan);
+
+      // チェックボックス
+      let checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+
+      // テキスト
+      let span = document.createElement("span");
+      span.textContent = input.value;
+
+      checkbox.onchange = function () {
+        if (checkbox.checked) {
+          span.style.color = "gray";
+          span.style.fontStyle = "italic";
+          li.style.backgroundColor = "#c6dcfd";
+        } else {
+          span.style.color = "black";
+          span.style.fontStyle = "";
+          li.style.backgroundColor = "#afcdf9";
+          checkDeadlines(); // チェック外したら期限切れ判定を復活
+        }
+      };
+
+      leftGroup.appendChild(checkbox);
+      leftGroup.appendChild(span);
+
+      // 削除ボタン
+      let delBtn = document.createElement("button");
+      delBtn.className = "delBtn";
+      delBtn.textContent = "削除";
+      delBtn.onclick = function () {
+        parent.removeChild(li);
+      };
+
+      li.appendChild(leftGroup);
+      li.appendChild(delBtn);
+      parent.appendChild(li);
+
+      input.value = "";
+      dateInput.value = "";
+
+      // 追加後に判定
+      checkDeadlines();
+    }
+  }
+
+  // 期限切れチェック--------------------------
+  function checkDeadlines() {
+    let items = document.querySelectorAll("#list li");
+    let now = new Date();
+
+    items.forEach(li => {
+      let deadlineStr = li.dataset.deadline;
+      if (!deadlineStr) return; // 無期限スキップ
+      let deadline = new Date(deadlineStr);
+
+      let checkbox = li.querySelector("input[type='checkbox']");
+      if (checkbox && checkbox.checked) return; // 完了済みはスキップ
+
+      if (deadline < now.setHours(0,0,0,0)) {
+        li.style.backgroundColor = "#ff9999"; // 赤系
+      } else {
+        li.style.backgroundColor = "#afcdf9"; // 通常
+      }
+    });
+  }
+
+  // ページ読み込み後
+  window.onload = function () {
+    new Sortable(document.getElementById("list"), {
+      animation: 150,
+      ghostClass: "sortable-ghost",
+      chosenClass: "sortable-chosen",
+    });
+
+    // 1分おきに再チェック
+    setInterval(checkDeadlines, 60000);
+  };
+</script>
+
+
+</head>
+<body>
+  <div class="container">
+      <div class="upper">
+        <h1>ToDoリスト レベル3</h1>
+        <div class="btn-group">
+          <button id="addbtn" onclick="add()">追加</button>
+          <button id="sort" onclick="sortByDeadline()"><i class="fa-solid fa-filter"></i></button>
+        </div>
+        <input type="text" id="textbox" placeholder="やること"><br>
+        <input type="text" id="datebox" placeholder="期限の日付: mm/dd">
+        <button id="today" onclick="today()">今日</button>
+      </div>
+      <ol id="list" class="list"></ol>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/js/all.min.js"></script>
+</body>
+</html>
