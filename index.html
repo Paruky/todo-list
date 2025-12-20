@@ -23,6 +23,7 @@
     }
 
     .container {
+      position: relative;
       max-width: 470px;
       min-height: 98vh;
       margin: 0 auto;
@@ -135,11 +136,17 @@
       padding: 0.6em 0.8em;
       cursor: pointer;
     }
+    #canvas {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <script>
-    // 並べ替え関数
+
+  <script> // Todoリスト本体のスクリプト ---------------------------------------------------
+    // 並べ替え関数 ----------------------------------------------------------------------
   function sortByDeadline() {
     let parent = document.getElementById("list");
     let items = Array.from(parent.querySelectorAll("li"));
@@ -158,7 +165,7 @@
     items.forEach(item => parent.appendChild(item));
   }
 
-  // 今日ボタン---------------------------------------
+  // 今日ボタン--------------------------------------------------------------------------
   function today() {
     let dateInput = document.getElementById("datebox");
     let now = new Date();
@@ -167,7 +174,7 @@
     let formatted = month + "/" + day;
     dateInput.value = formatted;
   }
-  // 追加------------------------------
+  // 追加-------------------------------------------------------------------------------
   function add() {
     let input = document.getElementById("textbox");
     let dateInput = document.getElementById("datebox");
@@ -262,7 +269,7 @@
     }
   }
 
-  // 期限切れチェック--------------------------
+  // 期限切れチェック---------------------------------------------------------------------
   function checkDeadlines() {
     let items = document.querySelectorAll("#list li");
     let now = new Date();
@@ -296,10 +303,126 @@
   };
 </script>
 
+<script> // アナログ時計のスクリプト ------------------------------------------------------
+  let ctx;
+  let mode = "analog"
+
+  function drawClock() {
+      let canvas = document.getElementById("canvas")
+      ctx = canvas.getContext("2d")
+
+      // 一度クリアする
+      ctx.clearRect(0, 0, 150, 150)
+
+      // 現在時刻
+      let now = new Date();
+      let h = now.getHours() % 12;
+      let m = now.getMinutes();
+      let s = now.getSeconds();
+
+      // 角度（ラジアン）
+      let radH = ((Math.PI * 2) / 12) * h + ((Math.PI * 2) / 12) * (m / 60);
+      let radM = ((Math.PI * 2) / 60) * m;
+      let radS = ((Math.PI * 2) / 60) * s;
+
+      // 目盛り
+      drawTicks();
+
+      // ---- 時針 ----
+      ctx.save();
+      ctx.translate(75, 75);
+      ctx.rotate(radH);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -30);  // 時針の長さ
+      ctx.stroke();
+      ctx.restore();
+
+      // ---- 分針 ----
+      ctx.save();
+      ctx.translate(75, 75);
+      ctx.rotate(radM);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -45);  // 分針の長さ
+      ctx.stroke();
+      ctx.restore();
+
+      // ---- 秒針 ----
+      ctx.save();
+      ctx.translate(75, 75);
+      ctx.rotate(radS);
+      ctx.strokeStyle = "red";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -52);  // 秒針の長さ
+      ctx.stroke();
+      ctx.restore();
+  }
+
+
+  // 目盛り描画----------------------------------------------
+  function drawTicks() {
+      ctx.strokeStyle = "#aaa";
+      for (let i = 0; i < 60; i++) {
+          ctx.save();
+          let r = (Math.PI / 30) * i;
+          ctx.translate(75, 75);
+          ctx.rotate(r);
+
+          ctx.beginPath();
+          ctx.moveTo(0, -60);
+          ctx.lineTo(0, -52);
+          ctx.stroke();
+
+          ctx.restore();
+      }
+
+      ctx.strokeStyle = "#666";
+      for (let i = 0; i < 12; i++) {
+          ctx.save();
+          let r = (Math.PI / 6) * i;
+          ctx.translate(75, 75);
+          ctx.rotate(r);
+
+          ctx.beginPath();
+          ctx.moveTo(0, -61);
+          ctx.lineTo(0, -45);
+          ctx.stroke();
+
+          ctx.restore();
+      }
+  }
+  // デジタル時計 -------------------------------------------
+  function drawTime() {
+    
+  }
+
+  function init() { //-------------------------------------
+    if (mode == "analog") {
+      setInterval(drawClock, 100);
+    } else {
+      setInterval(drawTime, 100)
+    }
+  }
+  function modechange() { //-------------------------------
+    if (mode == "analog") {
+      mode = "digital"
+    } else {
+      mode == "analog"
+    }
+  }
+</script>
 
 </head>
-<body>
+<body onload="init()" onload="drawClock()">
   <div class="container">
+    <canvas id="canvas" width="150" height="150" onclick="modechange()"></canvas>
       <div class="upper">
         <h1>ToDoリスト</h1>
         <div class="btn-group">
