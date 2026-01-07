@@ -303,9 +303,8 @@
   };
 </script>
 
-<script> // アナログ時計のスクリプト ------------------------------------------------------
+<!-- <script> // アナログ時計のスクリプト ------------------------------------------------------
   let ctx;
-  let mode = "analog"
 
   function drawClock() {
       let canvas = document.getElementById("canvas")
@@ -400,29 +399,68 @@
   }
   // デジタル時計 -------------------------------------------
   function drawTime() {
+    let canvas = document.getElementById("canvas")
+    let ctx = canvas.getContext("2d")
+    // 現在時刻
+    let now = new Date();
+    let h = now.getHours();
+    let m = String(now.getMinutes()).padStart(2, "0");
+    let s = String(now.getSeconds()).padStart(2, "0");
     
-  }
+    // 一度クリアする
+    ctx.clearRect(0, 0, 150, 150)
 
-  function init() { //-------------------------------------
-    if (mode == "analog") {
-      setInterval(drawClock, 100);
-    } else {
-      setInterval(drawTime, 100)
-    }
-  }
-  function modechange() { //-------------------------------
-    if (mode == "analog") {
-      mode = "digital"
-    } else {
-      mode == "analog"
-    }
+    ctx.font = "30px 'Degitalism'"
+
+    ctx.strokeStyle = "#222"
+    ctx.fillText(`${h}:${m}:${s}`, 10, 50);
   }
 </script>
 
+<script>
+  let timerId = null;
+  let mode = "analog"; // 最初はアナログ
+
+  function initAnalog() {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(drawClock, 100);
+  }
+
+  function initDigital() {
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(drawTime, 100);
+  }
+
+  function modechange() {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 150, 150);
+
+    if (mode === "analog") {
+      mode = "digital";
+      initDigital();
+    } else {
+      mode = "analog";
+      initAnalog();
+    }
+  }
+
+  // ページ読み込み時
+  window.addEventListener("load", () => {
+    initAnalog();
+  });
+
+  window.addEventListener("load", () => {
+    initAnalog();
+  });
+
+</script> -->
+
+
 </head>
-<body onload="init()" onload="drawClock()">
+<body>
   <div class="container">
-    <canvas id="canvas" width="150" height="150" onclick="modechange()"></canvas>
+    <!-- <canvas id="canvas" width="150" height="150" onclick="modechange()" style="background-color: #333;"></canvas> -->
       <div class="upper">
         <h1>ToDoリスト</h1>
         <div class="btn-group">
